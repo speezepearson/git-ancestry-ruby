@@ -1,5 +1,7 @@
 #!/bin/bash
 
+HERE=`dirname "$BASH_SOURCE"`
+
 if [ -f ~/.bash_profile ]; then
     source ~/.bash_profile
 fi
@@ -16,13 +18,9 @@ elif [ ! "$GRAPH_ANCESTRY_DIR" ]; then
     GRAPH_ANCESTRY_DIR='.'
 fi
 
-basename="ancestry-graph"
+FILE=`mktemp ancestry-graph.XXX`
+ruby "$HERE/graph-ancestry.rb" -d "$GRAPH_ANCESTRY_DIR" --prefix "$GRAPH_ANCESTRY_TEAM_NAME" --contract > "$FILE.dot" || exit 1
+dot -Tpdf < "$FILE.dot" > "$FILE.pdf" || exit 1
+open -W -a '/Applications/Preview.app' "$FILE.pdf"
+rm "$FILE"{,.dot,.pdf}
 
-echo ruby ~/graph-ancestry.rb -d $GRAPH_ANCESTRY_DIR --contract "(^|origin/)$GRAPH_ANCESTRY_TEAM_NAME" '>' "${basename}.dot"
-ruby ~/graph-ancestry.rb -d "$GRAPH_ANCESTRY_DIR" --contract "(^|origin/)$GRAPH_ANCESTRY_TEAM_NAME" > "${basename}.dot" || exit
-
-echo dot -Tpdf '<' "${basename}.dot" '>' "${basename}.pdf"
-dot -Tpdf < "${basename}.dot" > "${basename}.pdf" || exit
-
-echo open "${basename}.pdf"
-open "${basename}.pdf" || exit
