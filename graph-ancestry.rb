@@ -360,7 +360,7 @@ end
 
 require 'optparse'
 
-args = {directory: '.'}
+args = {directory: '.', branch_patterns: []}
 OptionParser.new do |opts|
   opts.banner = "Usage: graph-ancestry.rb [options] BRANCH ..."
 
@@ -375,9 +375,13 @@ OptionParser.new do |opts|
   opts.on('-d', '--directory DIR', "git repository root (default #{args[:directory]} or ancestor)") do |dir|
     args[:directory] = dir
   end
+
+  opts.on('-p', '--prefix PREFIX', "branch name prefix to add pattern for") do |name|
+    args[:branch_patterns] << "(^|/)#{name}"
+  end
 end.parse!
 
-args[:branch_patterns] = ARGV
+args[:branch_patterns] += ARGV
 
 repo = Rugged::Repository.new(args[:directory])
 
